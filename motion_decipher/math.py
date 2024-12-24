@@ -1,3 +1,23 @@
+from math import pi, sqrt, atan2
+
+
+RAD_2_DEG: float = 180.0 / pi
+DEG_2_RAD: float = pi / 180.0
+
+def compute_distance(point_a: tuple[float, float], point_b: tuple[float, float]) -> float:
+    return sqrt(
+        (point_a[0] - point_b[0])**2.0 +
+        (point_a[1] - point_b[1])**2.0
+    )
+
+def compute_angle_deg(point_from: tuple[float, float], point_to: tuple[float, float]) -> float:
+    return (
+        360.0 + atan2(
+            point_to[1] - point_from[1],
+            point_to[0] - point_from[0]
+        ) * RAD_2_DEG
+    ) % 360.0
+
 def normalize_3d(points: list[tuple[float, float, float]]) -> list[tuple[float, float, float]]:
     x_min = float("inf")
     x_max = float("-inf")

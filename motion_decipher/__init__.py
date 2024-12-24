@@ -1,7 +1,7 @@
 import cv2 as cv
 from math import sin, cos, pi
 import motion_decipher.logger as logger
-from motion_decipher.normalize import normalize_3d
+from motion_decipher.math import normalize_3d
 from motion_decipher.keypad import Keypad, META_QUEST_3_KEYPAD
 from motion_decipher.pose_estimation import Triangle, pose_estimation
 
