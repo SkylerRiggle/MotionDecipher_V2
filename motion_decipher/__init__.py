@@ -2,17 +2,14 @@ import cv2 as cv
 from math import sin, cos, pi
 import motion_decipher.logger as logger
 from motion_decipher.math import normalize_3d
-from motion_decipher.keypad import Keypad, META_QUEST_3_KEYPAD
+from motion_decipher.quest_3_correlation import quest_3_correlation
 from motion_decipher.pose_estimation import Triangle, pose_estimation
 
 def run_motion_decipher(
     video_path: str,
     target_sequence: str,
     presses: list[tuple[int, int]],
-    view_angle: float,
-    angle_ambiguous: list[float],
-    dist_ambiguous: list[tuple[float, float]],
-    target_keypad: Keypad = META_QUEST_3_KEYPAD
+    view_angle: float
 ) -> list[str]:
     logger.log_info(f"Starting Case {target_sequence}.")
 
@@ -69,26 +66,12 @@ def run_motion_decipher(
 
     logger.log_info("Finished Keyboard Reconstruction.")
 
-    min_list: list[str] | None = None
+    results = quest_3_correlation(points_2d)
 
-    for dist in dist_ambiguous:
-        for angle in angle_ambiguous:
-            cur_list = target_keypad.infer_candidates(
-                points_2d,
-                angle,
-                dist
-            )
-
-            if target_sequence not in cur_list:
-                continue
-
-            if min_list is None or len(cur_list) < len(min_list):
-                min_list = cur_list
-
-    if min_list is None:
+    if not target_sequence in results:
         logger.log_error(f"Failure Case {target_sequence}...")
         return []
 
     logger.log_success(f"Success Case {target_sequence}!")
-    return min_list
+    return results
 

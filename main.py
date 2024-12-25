@@ -1,13 +1,17 @@
 from os import mkdir, listdir
 from os.path import join, isdir
 from multiprocessing import Pool
-from motion_decipher import run_motion_decipher, META_QUEST_3_KEYPAD, logger
+from motion_decipher import run_motion_decipher, logger
 
 
 """
 Change the variable TEST_CASE_FOLDER to the relative path
 of the directory containing the 'videos' and 'keypresses'
 folders you'd like to run.
+
+Change the variable TEST_CASE_FILE to the name of the video
+file you'd like to run, or None to run all videos in the
+directory.
 
 Change the variable OUTPUT_FOLDER to the relative path
 you'd like to save the list of candidates for each PIN.
@@ -18,17 +22,10 @@ Change the variable MAX_PROCESSES to the value of 1 for a standard synchronous
 single-process run, or larger if you'd like to run numerous tests at a time.
 """
 TEST_CASE_FOLDER: str = "./tests"
+TEST_CASE_FILE: str | None = None
 OUTPUT_FOLDER: str = "./output"
 VIEWING_ANGLE: float = 90.0
 MAX_PROCESSES: int = 10
-
-ANGLE_AMBIGUOUS: list[float] = [15.0, 22.5]
-DIST_AMBIGUOUS: list[tuple[float, float]] = [
-    (0.25, 0.17),
-    (0.375, 0.25),
-    (0.5, 0.34),
-    (0.75, 0.5),
-]
 
 def handle_proc(
     videos_path: str,
@@ -64,10 +61,7 @@ def handle_proc(
         join(videos_path, video_filename),
         target_sequence,
         presses,
-        VIEWING_ANGLE,
-        ANGLE_AMBIGUOUS,
-        DIST_AMBIGUOUS,
-        META_QUEST_3_KEYPAD
+        VIEWING_ANGLE
     )
 
     out_file = open(join(OUTPUT_FOLDER, target_sequence + ".txt"), "w")
@@ -78,6 +72,10 @@ def handle_proc(
 def main():
     videos_path: str = join(TEST_CASE_FOLDER, "videos")
     keypresses_path: str = join(TEST_CASE_FOLDER, "keypresses")
+
+    if TEST_CASE_FILE is not None:
+        handle_proc(videos_path, keypresses_path, TEST_CASE_FILE)
+        return
 
     video_filenames = listdir(videos_path)
     video_filenames.sort()
@@ -94,7 +92,7 @@ def main():
         video_filename,
     ) for video_filename in video_filenames]
 
-    process_pool = Pool(processes=MAX_PROCESSES)
+    process_pool = Pool(processes=min(MAX_PROCESSES, len(arguments)))
     process_pool.starmap(handle_proc, arguments)
 
 

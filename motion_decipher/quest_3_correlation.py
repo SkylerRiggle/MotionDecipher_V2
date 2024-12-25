@@ -63,9 +63,16 @@ def __get_directions__(angle: float, delta_t: float = 22.5) -> list[int]:
     for g_idx in range(len(__DIR_GROUPS)):
         true_angle = __DIR_GROUPS[g_idx]
 
-        if true_angle - delta_t <= angle <= true_angle + delta_t:
+        lower = (true_angle - delta_t + 360.0) % 360.0
+        upper = (true_angle + delta_t) % 360.0
+
+        if lower <= angle <= upper:
             return [g_idx]
-        
+
+        if lower > true_angle:
+            if angle >= lower or angle <= upper:
+                return [g_idx]
+
         g_min_distance = abs(angle - true_angle)
         if g_min_distance < min_distance:
             min_idx = g_idx
@@ -158,7 +165,7 @@ def __build_dis_table__():
             for dis_feature in __get_distances__(compute_distance(from_pos, to_pos)):
                 __DIS_TABLE[from_key][dis_feature].add(to_key)
 
-def quest_3_correlation(input_points: list[tuple[float, float]], delta_t: float = 22.5) -> list[str]:
+def quest_3_correlation(input_points: list[tuple[float, float]], delta_t: float = 14.5) -> list[str]:
     global __DIR_TABLE, __DIS_TABLE, __DIS_GROUPS
 
     match len(input_points):
@@ -195,6 +202,6 @@ def quest_3_correlation(input_points: list[tuple[float, float]], delta_t: float 
             cur_sequences = new_sequences
 
         for sequence in cur_sequences:
-            candidates.add(sequence)
-            
+            candidates.add(sequence)    
+    
     return list(candidates)
